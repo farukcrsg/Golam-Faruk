@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কোরআন বিষয়ভিত্তিক ব্যবস্থাপক</title>
+    <style>
+        body {
+            font-family: 'SolaimanLipi', 'Siyam Rupali', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c5e1a;
+            text-align: center;
+            border-bottom: 2px solid #2c5e1a;
+            padding-bottom: 10px;
+        }
+        .menu {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .menu button {
+            padding: 8px 15px;
+            background-color: #2c5e1a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .menu button:hover {
+            background-color: #3a7d22;
+        }
+        .section {
+            display: none;
+            margin-top: 20px;
+        }
+        .active {
+            display: block;
+        }
+        .category-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .category-btn {
+            padding: 5px 10px;
+            background-color: #e9f5e1;
+            border: 1px solid #2c5e1a;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .category-btn:hover {
+            background-color: #d0e6c0;
+        }
+        .category-btn.active-category {
+            background-color: #2c5e1a;
+            color: white;
+        }
+        .verse-list {
+            margin-top: 20px;
+        }
+        .verse-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2c5e1a;
+            border-radius: 4px;
+        }
+        .verse-arabic {
+            font-family: 'Traditional Arabic', 'Arial Unicode MS', sans-serif;
+            font-size: 20px;
+            text-align: right;
+            direction: rtl;
+            margin-bottom: 10px;
+        }
+        .verse-bangla {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .verse-word-meaning {
+            font-size: 14px;
+            color: #555;
+            font-style: italic;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .verse-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .arabic-input {
+            font-family: 'Traditional Arabic', 'Arial Unicode MS', sans-serif;
+            font-size: 18px;
+            text-align: right;
+            direction: rtl;
+            height: 60px;
+        }
+        .bangla-input, .meaning-input {
+            height: 50px;
+        }
+        .voice-btn {
+            background-color: #4a6ea9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        .voice-btn:hover {
+            background-color: #3a5a8c;
+        }
+        .voice-btn.recording {
+            background-color: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        .input-with-btn {
+            display: flex;
+            align-items: center;
+        }
+        .input-with-btn input, .input-with-btn textarea {
+            flex-grow: 1;
+        }
+        .save-btn {
+            background-color: #2c5e1a;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        .save-btn:hover {
+            background-color: #3a7d22;
+        }
+        .export-import {
+            margin-top: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        .delete-category-btn {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .category-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .delete-verse-btn {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-top: 5px;
+        }
+        @media (max-width: 600px) {
+            .menu {
+                flex-direction: column;
+            }
+            .menu button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>কোরআন বিষয়ভিত্তিক ব্যবস্থাপক</h1>
+        
+        <div class="menu">
+            <button onclick="showSection('add-verse')">নতুন আয়াত যোগ করুন</button>
+            <button onclick="showSection('view-verse')">আয়াত দেখুন</button>
+            <button onclick="showSection('manage-data')">ডেটা ব্যবস্থাপনা</button>
+        </div>
+        
+        <!-- Add Verse Section -->
+        <div id="add-verse" class="section">
+            <h2>নতুন আয়াত যোগ করুন</h2>
+            <div class="category-list" id="add-categories">
+                <!-- Categories will be added here by JavaScript -->
+            </div>
+            <div class="input-group">
+                <input type="text" id="new-category" placeholder="নতুন বিষয় যোগ করুন" class="verse-input">
+                <button onclick="addNewCategory()" class="save-btn">বিষয় যোগ করুন</button>
+            </div>
+            
+            <h3 style="margin-top: 20px;">আয়াত লিখুন</h3>
+            
+            <div class="input-group">
+                <label for="surah-name">সুরার নাম</label>
+                <div class="input-with-btn">
+                    <input type="text" id="surah-name" placeholder="সুরার নাম" class="verse-input">
+                    <button onclick="startVoiceInput('surah-name')" class="voice-btn" title="ভয়েস ইনপুট">🎤</button>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="verse-number">আয়াত নম্বর</label>
+                <div class="input-with-btn">
+                    <input type="text" id="verse-number" placeholder="আয়াত নম্বর" class="verse-input">
+                    <button onclick="startVoiceInput('verse-number')" class="voice-btn" title="ভয়েস ইনপুট">🎤</button>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="verse-text">আরবি আয়াত</label>
+                <textarea id="verse-text" placeholder="আয়াতের আরবি متن" class="verse-input arabic-input"></textarea>
+            </div>
+            
+            <div class="input-group">
+                <label for="verse-bangla">বাংলা অনুবাদ</label>
+                <div class="input-with-btn">
+                    <textarea id="verse-bangla" placeholder="আয়াতের বাংলা অনুবাদ" class="verse-input bangla-input"></textarea>
+                    <button onclick="startVoiceInput('verse-bangla')" class="voice-btn" title="ভয়েস ইনপুট">🎤</button>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="verse-word-meaning">শব্দার্থ</label>
+                <div class="input-with-btn">
+                    <textarea id="verse-word-meaning" placeholder="আয়াতের শব্দার্থ" class="verse-input meaning-input"></textarea>
+                    <button onclick="startVoiceInput('verse-word-meaning')" class="voice-btn" title="ভয়েস ইনপুট">🎤</button>
+                </div>
+            </div>
+            
+            <button onclick="saveVerse()" class="save-btn">আয়াত সংরক্ষণ করুন</button>
+        </div>
+        
+        <!-- View Verse Section -->
+        <div id="view-verse" class="section active">
+            <h2>আয়াত দেখুন</h2>
+            <div class="category-list" id="view-categories">
+                <!-- Categories will be added here by JavaScript -->
+            </div>
+            <div class="verse-list" id="verse-list">
+                <!-- Verses will be added here by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Manage Data Section -->
+        <div id="manage-data" class="section">
+            <h2>ডেটা ব্যবস্থাপনা</h2>
+            <div class="export-import">
+                <h3>ডেটা এক্সপোর্ট</h3>
+                <button onclick="exportData()" class="save-btn">সমস্ত ডেটা ডাউনলোড করুন</button>
+                
+                <h3 style="margin-top: 20px;">ডেটা ইম্পোর্ট</h3>
+                <textarea id="import-data" placeholder="এখানে ডেটা পেস্ট করুন"></textarea>
+                <button onclick="importData()" class="save-btn">ডেটা ইম্পোর্ট করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data
+        let quranData = {
+            "সালাত": [],
+            "সাওম": [],
+            "হজ্জ": [],
+            "বিবাহ": [],
+            "যাকাত": [],
+            "জিহাদ": [],
+            "তাওবা": [],
+            "আখিরাত": [], 
+            "কুরআন ব্যখ্যায়িত": [],
+            "সামাজিক ন্যায়বিচার": []
+        };
+
+        // Voice recognition variables
+        let recognition;
+        let currentVoiceInputField = null;
+
+        // Initialize voice recognition
+        function initVoiceRecognition() {
+            try {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'bn-BD'; // Bengali (Bangladesh)
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    if (currentVoiceInputField) {
+                        const field = document.getElementById(currentVoiceInputField);
+                        if (field.tagName === 'TEXTAREA') {
+                            field.value += transcript;
+                        } else {
+                            field.value = transcript;
+                        }
+                    }
+                    stopVoiceRecognition();
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Voice recognition error', event.error);
+                    stopVoiceRecognition();
+                };
+
+                recognition.onend = function() {
+                    stopVoiceRecognition();
+                };
+            } catch (e) {
+                console.error("Voice recognition not supported", e);
+                alert("আপনার ব্রাউজারে ভয়েস রেকগনিশন সাপোর্ট করে না। Chrome বা Edge ব্রাউজার ব্যবহার করুন।");
+            }
+        }
+
+        // Start voice input
+        function startVoiceInput(fieldId) {
+            currentVoiceInputField = fieldId;
+            const btn = document.querySelector(`button[onclick="startVoiceInput('${fieldId}')"]`);
+            
+            try {
+                if (!recognition) {
+                    initVoiceRecognition();
+                }
+                
+                btn.classList.add('recording');
+                recognition.start();
+                btn.title = "রেকর্ডিং চলছে...";
+            } catch (e) {
+                console.error("Voice recognition error", e);
+                btn.classList.remove('recording');
+                btn.title = "ভয়েস ইনপুট";
+            }
+        }
+
+        // Stop voice recognition
+        function stopVoiceRecognition() {
+            if (recognition) {
+                try {
+                    recognition.stop();
+                } catch (e) {
+                    console.error("Error stopping recognition", e);
+                }
+            }
+            
+            if (currentVoiceInputField) {
+                const btn = document.querySelector(`button[onclick="startVoiceInput('${currentVoiceInputField}')"]`);
+                if (btn) {
+                    btn.classList.remove('recording');
+                    btn.title = "ভয়েস ইনপুট";
+                }
+                currentVoiceInputField = null;
+            }
+        }
+
+        // Load data from localStorage if available
+        if (localStorage.getItem('quranData')) {
+            quranData = JSON.parse(localStorage.getItem('quranData'));
+        }
+
+        let currentCategory = "";
+        let currentSection = "view-verse";
+
+        // Initialize the app
+        function init() {
+            renderCategories();
+            showSection(currentSection);
+        }
+
+        // Show selected section
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+            currentSection = sectionId;
+            
+            if (sectionId === 'view-verse') {
+                if (currentCategory) {
+                    renderVerses(currentCategory);
+                } else if (Object.keys(quranData).length > 0) {
+                    currentCategory = Object.keys(quranData)[0];
+                    renderVerses(currentCategory);
+                }
+            }
+        }
+
+        // Render categories
+        function renderCategories() {
+            const addCategoriesDiv = document.getElementById('add-categories');
+            const viewCategoriesDiv = document.getElementById('view-categories');
+            
+            addCategoriesDiv.innerHTML = '';
+            viewCategoriesDiv.innerHTML = '';
+            
+            Object.keys(quranData).forEach(category => {
+                // For add verse section
+                const addCategoryContainer = document.createElement('div');
+                addCategoryContainer.className = 'category-container';
+                
+                const addBtn = document.createElement('button');
+                addBtn.textContent = category;
+                addBtn.className = 'category-btn';
+                if (currentSection === 'add-verse' && currentCategory === category) {
+                    addBtn.classList.add('active-category');
+                }
+                addBtn.onclick = () => {
+                    currentCategory = category;
+                    document.querySelectorAll('#add-categories .category-btn').forEach(btn => {
+                        btn.classList.remove('active-category');
+                    });
+                    addBtn.classList.add('active-category');
+                };
+                
+                const deleteCatBtn = document.createElement('button');
+                deleteCatBtn.textContent = '×';
+                deleteCatBtn.className = 'delete-category-btn';
+                deleteCatBtn.title = 'বিষয় ডিলিট করুন';
+                deleteCatBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteCategory(category);
+                };
+                
+                addCategoryContainer.appendChild(addBtn);
+                addCategoryContainer.appendChild(deleteCatBtn);
+                addCategoriesDiv.appendChild(addCategoryContainer);
+                
+                // For view verse section
+                const viewBtn = document.createElement('button');
+                viewBtn.textContent = category;
+                viewBtn.className = 'category-btn';
+                if (currentSection === 'view-verse' && currentCategory === category) {
+                    viewBtn.classList.add('active-category');
+                }
+                viewBtn.onclick = () => {
+                    currentCategory = category;
+                    renderVerses(category);
+                    document.querySelectorAll('#view-categories .category-btn').forEach(btn => {
+                        btn.classList.remove('active-category');
+                    });
+                    viewBtn.classList.add('active-category');
+                };
+                viewCategoriesDiv.appendChild(viewBtn);
+            });
+        }
+
+        // Add new category
+        function addNewCategory() {
+            const newCategoryInput = document.getElementById('new-category');
+            const categoryName = newCategoryInput.value.trim();
+            
+            if (categoryName && !quranData[categoryName]) {
+                quranData[categoryName] = [];
+                newCategoryInput.value = '';
+                saveData();
+                renderCategories();
+                
+                if (currentSection === 'add-verse') {
+                    currentCategory = categoryName;
+                }
+            }
+        }
+
+        // Delete a category
+        function deleteCategory(category) {
+            if (confirm(`আপনি কি নিশ্চিত যে "${category}" বিষয়টি ডিলিট করতে চান?\nএই বিষয়ের সব আয়াতও ডিলিট হয়ে যাবে!`)) {
+                delete quranData[category];
+                saveData();
+                
+                // If current category is deleted, select first available category
+                if (currentCategory === category) {
+                    const categories = Object.keys(quranData);
+                    currentCategory = categories.length > 0 ? categories[0] : '';
+                }
+                
+                renderCategories();
+                if (currentSection === 'view-verse') {
+                    renderVerses(currentCategory);
+                }
+            }
+        }
+
+        // Save verse
+        function saveVerse() {
+            if (!currentCategory) {
+                alert('দয়া করে একটি বিষয় নির্বাচন করুন');
+                return;
+            }
+            
+            const surahName = document.getElementById('surah-name').value.trim();
+            const verseNumber = document.getElementById('verse-number').value.trim();
+            const verseText = document.getElementById('verse-text').value.trim();
+            const verseBangla = document.getElementById('verse-bangla').value.trim();
+            const verseWordMeaning = document.getElementById('verse-word-meaning').value.trim();
+            
+            if (!surahName || !verseNumber || !verseText) {
+                alert('দয়া করে সুরার নাম, আয়াত নম্বর এবং আরবি আয়াত পূরণ করুন');
+                return;
+            }
+            
+            const verse = {
+                surah: surahName,
+                number: verseNumber,
+                text: verseText,
+                bangla: verseBangla,
+                wordMeaning: verseWordMeaning,
+                id: Date.now()
+            };
+            
+            quranData[currentCategory].push(verse);
+            saveData();
+            
+            // Clear inputs
+            document.getElementById('surah-name').value = '';
+            document.getElementById('verse-number').value = '';
+            document.getElementById('verse-text').value = '';
+            document.getElementById('verse-bangla').value = '';
+            document.getElementById('verse-word-meaning').value = '';
+            
+            alert('আয়াত সফলভাবে সংরক্ষণ করা হয়েছে!');
+        }
+
+        // Render verses for a category
+        function renderVerses(category) {
+            const verseListDiv = document.getElementById('verse-list');
+            verseListDiv.innerHTML = '';
+            
+            if (!quranData[category] || quranData[category].length === 0) {
+                verseListDiv.innerHTML = '<p>এই বিষয়ে কোনো আয়াত পাওয়া যায়নি</p>';
+                return;
+            }
+            
+            quranData[category].forEach(verse => {
+                const verseDiv = document.createElement('div');
+                verseDiv.className = 'verse-item';
+                
+                let verseContent = `
+                    <h3>${verse.surah} - আয়াত ${verse.number}</h3>
+                    <div class="verse-arabic">${verse.text}</div>
+                `;
+                
+                if (verse.bangla) {
+                    verseContent += `<div class="verse-bangla"><strong>বাংলা অনুবাদ:</strong> ${verse.bangla}</div>`;
+                }
+                
+                if (verse.wordMeaning) {
+                    verseContent += `<div class="verse-word-meaning"><strong>শব্দার্থ:</strong> ${verse.wordMeaning}</div>`;
+                }
+                
+                verseContent += `<button onclick="deleteVerse('${category}', ${verse.id})" class="delete-verse-btn">মুছুন</button>`;
+                
+                verseDiv.innerHTML = verseContent;
+                verseListDiv.appendChild(verseDiv);
+            });
+        }
+
+        // Delete a verse
+        function deleteVerse(category, id) {
+            if (confirm('আপনি কি নিশ্চিত এই আয়াতটি মুছতে চান?')) {
+                quranData[category] = quranData[category].filter(verse => verse.id !== id);
+                saveData();
+                renderVerses(category);
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('quranData', JSON.stringify(quranData));
+        }
+
+        // Export data
+        function exportData() {
+            const dataStr = JSON.stringify(quranData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'quran-verse-data.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        // Import data
+        function importData() {
+            const importText = document.getElementById('import-data').value.trim();
+            
+            if (!importText) {
+                alert('দয়া করে ইম্পোর্ট করার জন্য ডেটা পেস্ট করুন');
+                return;
+            }
+            
+            try {
+                const importedData = JSON.parse(importText);
+                quranData = importedData;
+                saveData();
+                init();
+                alert('ডেটা সফলভাবে ইম্পোর্ট করা হয়েছে!');
+                document.getElementById('import-data').value = '';
+            } catch (e) {
+                alert('ডেটা ফরম্যাট সঠিক নয়: ' + e.message);
+            }
+        }
+
+        // Initialize the app when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <!-- [Previous meta tags and title remain the same] -->
+    <style>
+        /* [Previous CSS remains the same] */
+        
+        .verse-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .edit-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- [Previous HTML structure remains the same until verse display] -->
+
+    <script>
+        // [Previous JavaScript remains the same until renderVerses function]
+
+        // Updated renderVerses function with edit button
+        function renderVerses(category) {
+            const verseListDiv = document.getElementById('verse-list');
+            verseListDiv.innerHTML = '';
+            
+            if (!quranData[category] || quranData[category].length === 0) {
+                verseListDiv.innerHTML = '<p>এই বিষয়ে কোনো আয়াত পাওয়া যায়নি</p>';
+                return;
+            }
+            
+            quranData[category].forEach(verse => {
+                const verseDiv = document.createElement('div');
+                verseDiv.className = 'verse-item';
+                verseDiv.id = `verse-${verse.id}`;
+                
+                let verseContent = `
+                    <h3>${verse.surah} - আয়াত ${verse.number}</h3>
+                    <div class="verse-arabic">${verse.text}</div>
+                `;
+                
+                if (verse.bangla) {
+                    verseContent += `<div class="verse-bangla"><strong>বাংলা অনুবাদ:</strong> ${verse.bangla}</div>`;
+                }
+                
+                if (verse.wordMeaning) {
+                    verseContent += `<div class="verse-word-meaning"><strong>শব্দার্থ:</strong> ${verse.wordMeaning}</div>`;
+                }
+                
+                verseContent += `
+                    <div class="verse-actions">
+                        <button onclick="editVerse('${category}', ${verse.id})" class="edit-btn">এডিট</button>
+                        <button onclick="deleteVerse('${category}', ${verse.id})" class="delete-verse-btn">মুছুন</button>
+                    </div>
+                `;
+                
+                verseDiv.innerHTML = verseContent;
+                verseListDiv.appendChild(verseDiv);
+            });
+        }
+
+        // New editVerse function
+        function editVerse(category, id) {
+            const verse = quranData[category].find(v => v.id === id);
+            if (!verse) return;
+            
+            // Switch to add verse section
+            showSection('add-verse');
+            
+            // Find and select the category
+            currentCategory = category;
+            document.querySelectorAll('#add-categories .category-btn').forEach(btn => {
+                btn.classList.remove('active-category');
+                if (btn.textContent === category) {
+                    btn.classList.add('active-category');
+                }
+            });
+            
+            // Fill the form with verse data
+            document.getElementById('surah-name').value = verse.surah;
+            document.getElementById('verse-number').value = verse.number;
+            document.getElementById('verse-text').value = verse.text;
+            document.getElementById('verse-bangla').value = verse.bangla || '';
+            document.getElementById('verse-word-meaning').value = verse.wordMeaning || '';
+            
+            // Change save button to update
+            const saveBtn = document.querySelector('#add-verse .save-btn');
+            saveBtn.textContent = 'আপডেট করুন';
+            saveBtn.onclick = function() {
+                updateVerse(category, id);
+            };
+            
+            // Scroll to form
+            document.getElementById('add-verse').scrollIntoView();
+        }
+
+        // New updateVerse function
+        function updateVerse(category, id) {
+            const surahName = document.getElementById('surah-name').value.trim();
+            const verseNumber = document.getElementById('verse-number').value.trim();
+            const verseText = document.getElementById('verse-text').value.trim();
+            const verseBangla = document.getElementById('verse-bangla').value.trim();
+            const verseWordMeaning = document.getElementById('verse-word-meaning').value.trim();
+            
+            if (!surahName || !verseNumber || !verseText) {
+                alert('দয়া করে সুরার নাম, আয়াত নম্বর এবং আরবি আয়াত পূরণ করুন');
+                return;
+            }
+            
+            const verseIndex = quranData[category].findIndex(v => v.id === id);
+            if (verseIndex !== -1) {
+                quranData[category][verseIndex] = {
+                    surah: surahName,
+                    number: verseNumber,
+                    text: verseText,
+                    bangla: verseBangla,
+                    wordMeaning: verseWordMeaning,
+                    id: id
+                };
+                
+                saveData();
+                
+                // Reset form
+                document.getElementById('surah-name').value = '';
+                document.getElementById('verse-number').value = '';
+                document.getElementById('verse-text').value = '';
+                document.getElementById('verse-bangla').value = '';
+                document.getElementById('verse-word-meaning').value = '';
+                
+                // Restore save button
+                const saveBtn = document.querySelector('#add-verse .save-btn');
+                saveBtn.textContent = 'আয়াত সংরক্ষণ করুন';
+                saveBtn.onclick = saveVerse;
+                
+                alert('আয়াত সফলভাবে আপডেট করা হয়েছে!');
+                showSection('view-verse');
+                renderVerses(category);
+            }
+        }
+
+        // [Rest of the JavaScript remains the same]
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কোরআন বিষয়ভিত্তিক ব্যবস্থাপক</title>
+    <style>
+        /* [All previous CSS remains unchanged] */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- [Previous HTML structure remains the same] -->
+    </div>
+
+    <script>
+        // Initialize data
+        let quranData = {
+            "সালাত": [],
+            "সাওম": [],
+            "হজ্জ": [],
+            "বিবাহ": [],
+            "যাকাত": [],
+            "জিহাদ": [],
+            "তাওবা": [],
+            "আখিরাত": [],
+            "পারিবারিক জীবন": [],
+            "সামাজিক ন্যায়বিচার": []
+        };
+
+        // [Previous voice recognition and other variables remain the same]
+
+        // Fixed addNewCategory function
+        function addNewCategory() {
+            const newCategoryInput = document.getElementById('new-category');
+            const categoryName = newCategoryInput.value.trim();
+            
+            if (categoryName) {
+                if (!quranData[categoryName]) {
+                    quranData[categoryName] = [];
+                    newCategoryInput.value = '';
+                    saveData();
+                    renderCategories();
+                    
+                    // Auto-select the new category
+                    currentCategory = categoryName;
+                    const addButtons = document.querySelectorAll('#add-categories .category-btn');
+                    addButtons.forEach(btn => {
+                        btn.classList.remove('active-category');
+                        if (btn.textContent === categoryName) {
+                            btn.classList.add('active-category');
+                        }
+                    });
+                    
+                    // Also update view categories if in view section
+                    if (currentSection === 'view-verse') {
+                        const viewButtons = document.querySelectorAll('#view-categories .category-btn');
+                        viewButtons.forEach(btn => {
+                            btn.classList.remove('active-category');
+                            if (btn.textContent === categoryName) {
+                                btn.classList.add('active-category');
+                            }
+                        });
+                        renderVerses(categoryName);
+                    }
+                } else {
+                    alert('এই বিষয়টি ইতিমধ্যেই exists!');
+                }
+            } else {
+                alert('দয়া করে একটি বিষয়ের নাম লিখুন');
+            }
+        }
+
+        // [Rest of the JavaScript code remains the same]
+
+        // Initialize the app when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
